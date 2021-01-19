@@ -31,7 +31,7 @@ class ReportController extends AbstractController
                 $returnData[$key]->setTitle($key);
                 $returnData[$key]->setColor($data->getTransactionCategory()->getColor());
             }
-            $returnData[$key]->addAmount($data->getAmount());
+            $returnData[$key]->addAmount($data->getCalculableAmount());
         }
         ksort($returnData);
         return $returnData;

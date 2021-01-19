@@ -32,12 +32,12 @@ class Report
         $this->color = $color;
     }
 
-    public function getAmount(): int
+    public function getAmount(): float
     {
         return $this->amount;
     }
 
-    public function addAmount(int $amount)
+    public function addAmount(float $amount)
     {
         $this->amount += $amount;
     }

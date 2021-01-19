@@ -66,6 +66,12 @@ class Transaction
         return $this->amount;
     }
 
+    public function getCalculableAmount(): float
+    {
+        $amount = floatval($this->amount);
+        return $amount / 100;
+    }
+
     public function setAmount(string $amount): self
     {
         $this->amount = $amount;
