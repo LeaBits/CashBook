@@ -24,11 +24,78 @@
         </label>
     </div>
 
-    <div style="overflow: auto;">
-        <canvas id="outcomeChart" width="400" height="400"
-                style="float: left; max-width: 45%; height: auto !important;"></canvas>
-        <canvas id="incomeChart" width="400" height="400"
-                style="float: right; max-width: 45%; height: auto !important;"></canvas>
+    <div style="display:grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 20px;
+            row-gap: 20px;">
+
+        <div>
+            <h2>Outgoing</h2>
+            <canvas id="outcomeChart" width="400" height="400"></canvas>
+
+            <table class="table datagrid with-rounded-top ">
+                <thead>
+                <tr>
+                    <th class="text-" dir="ltr">
+                        <span>Category</span>
+                    </th>
+                    <th class="text-center" dir="ltr">
+                        <span>Amount</span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for value in outcomeData %}
+                    <tr>
+                        <td class=" text- field-association" dir="ltr">
+                            <div class="field-boolean">
+                            <span class="badge" style="background-color: {{ value.getColor() }}; color: #fff;">
+                                {{ value.getTitle() }}
+                            </span>
+                            </div>
+                        </td>
+                        <td class="text-right field-money" dir="ltr">
+                            {{ value.getAmount() }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div>
+            <h2>Incoming</h2>
+            <canvas id="incomeChart" width="400" height="400"></canvas>
+
+            <table class="table datagrid with-rounded-top ">
+                <thead>
+                <tr>
+                    <th class="text-" dir="ltr">
+                        <span>Category</span>
+                    </th>
+                    <th class="text-center" dir="ltr">
+                        <span>Amount</span>
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for value in incomeData %}
+                    <tr>
+                        <td class=" text- field-association" dir="ltr">
+                            <div class="field-boolean">
+                            <span class="badge" style="background-color: {{ value.getColor() }}; color: #fff;">
+                                {{ value.getTitle() }}
+                            </span>
+                            </div>
+                        </td>
+                        <td class="text-right field-money" dir="ltr">
+                            {{ value.getAmount() }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 {% endblock %}
 
@@ -41,16 +108,7 @@
                 type: 'doughnut',
                 data: {
                     datasets: [{
-                        // data: [10, 20, 30],
                         data: [],
-                        // backgroundColor: [
-                        //     'rgba(255, 99, 132)',
-                        //     'rgba(54, 162, 235)',
-                        //     'rgba(255, 206, 86)',
-                        //     'rgba(75, 192, 192)',
-                        //     'rgba(153, 102, 255)',
-                        //     'rgba(255, 159, 64)'
-                        // ],
                         backgroundColor: [],
                     }],
 
