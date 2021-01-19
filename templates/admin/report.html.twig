@@ -1,0 +1,112 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block page_title 'Transaction report' %}
+
+{% block page_content %}
+    <div id="reportFilter">
+        <label>
+            Month
+            <select name="month" id="reportFilterMonth">
+                <option value="0">-</option>
+                {% for i in 1..12 %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </label>
+        <label>
+            Year
+            <select name="year" id="reportFilterYear">
+                <option value="0">-</option>
+                {% for i in minYear..maxYear %}
+                    <option value="{{ i }}">{{ i }}</option>
+                {% endfor %}
+            </select>
+        </label>
+    </div>
+
+    <div style="overflow: auto;">
+        <canvas id="outcomeChart" width="400" height="400"
+                style="float: left; max-width: 45%; height: auto !important;"></canvas>
+        <canvas id="incomeChart" width="400" height="400"
+                style="float: right; max-width: 45%; height: auto !important;"></canvas>
+    </div>
+{% endblock %}
+
+{% block body_javascript %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js" integrity="sha512-d9xgZrVZpmmQlfonhQUvTR7lMPtO7NkZMkA0ABN3PHCbKA5nqylQ/yWlFAyY6hYgdF1Qh6nYiuADWwKB4C2WSw==" crossorigin="anonymous"></script>
+    <script>
+        function createPie(id){
+            let outCtx = document.getElementById(''+id).getContext('2d');
+            return new Chart(outCtx, {
+                type: 'doughnut',
+                data: {
+                    datasets: [{
+                        // data: [10, 20, 30],
+                        data: [],
+                        // backgroundColor: [
+                        //     'rgba(255, 99, 132)',
+                        //     'rgba(54, 162, 235)',
+                        //     'rgba(255, 206, 86)',
+                        //     'rgba(75, 192, 192)',
+                        //     'rgba(153, 102, 255)',
+                        //     'rgba(255, 159, 64)'
+                        // ],
+                        backgroundColor: [],
+                    }],
+
+                    // These labels appear in the legend and in the tooltips when hovering different arcs
+                    labels: []
+                },
+                options: {}
+            });
+        }
+
+        let outcomeChart = createPie('outcomeChart');
+        {% set iterator = 0 %}
+        {% for value in outcomeData %}
+            outcomeChart.data.datasets[0].data[{{ iterator }}] = {{ value.getAmount() }};
+            outcomeChart.data.datasets[0].backgroundColor[{{ iterator }}] = "{{ value.getColor() }}";
+            outcomeChart.data.labels[{{ iterator }}] = "{{ value.getTitle() }}";
+            {% set iterator = iterator + 1 %}
+        {% endfor %}
+        outcomeChart.update();
+
+        let incomeChart = createPie('incomeChart');
+        {% set iterator = 0 %}
+        {% for value in incomeData %}
+            incomeChart.data.datasets[0].data[{{ iterator }}] = {{ value.getAmount() }};
+            incomeChart.data.datasets[0].backgroundColor[{{ iterator }}] = "{{ value.getColor() }}";
+            incomeChart.data.labels[{{ iterator }}] = "{{ value.getTitle() }}";
+            {% set iterator = iterator + 1 %}
+        {% endfor %}
+        incomeChart.update();
+
+        let monthFilter = document.getElementById('reportFilterMonth');
+        monthFilter.value = ""+{{ selectedMonth }};
+
+        let yearFilter = document.getElementById('reportFilterYear');
+        yearFilter.value = ""+{{ selectedYear }};
+        if(yearFilter.value == 0){
+            yearFilter.setAttribute('style','background: red;');
+        }
+
+        document.querySelectorAll('#reportFilter select').forEach(item => {
+            item.addEventListener('change', event => {
+                let yearFilter = document.getElementById('reportFilterYear');
+                let monthFilter = document.getElementById('reportFilterMonth');
+                if(yearFilter.value == 0){
+                    yearFilter.setAttribute('style','background: red;');
+                }else if(yearFilter.hasAttribute('style')){
+                    yearFilter.removeAttribute('style');
+                }
+
+                fetch('/admin/report/year/'+yearFilter.value+'/month/'+monthFilter.value)
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data);
+                            location.reload();
+                        });
+            })
+        })
+    </script>
+{% endblock body_javascript %}
