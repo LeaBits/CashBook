@@ -45,7 +45,9 @@
                 </tr>
                 </thead>
                 <tbody>
+                {% set total = 0 %}
                 {% for value in outcomeData %}
+                    {% set total = total + value.getAmount() %}
                     <tr>
                         <td class=" text- field-association" dir="ltr">
                             <div class="field-boolean">
@@ -55,11 +57,19 @@
                             </div>
                         </td>
                         <td class="text-right field-money" dir="ltr">
-                            {{ value.getAmount() }}
+                            € {{ value.getAmount() }}
                         </td>
                     </tr>
                 {% endfor %}
                 </tbody>
+                <tfoot>
+                <tr>
+                    <th class="text-" dir="ltr">
+                        <span>Total:</span>
+                    </td>
+                    <td class="text-right field-money" dir="ltr">€ {{ total }}</td>
+                </tr>
+                </tfoot>
             </table>
         </div>
 
@@ -79,7 +89,9 @@
                 </tr>
                 </thead>
                 <tbody>
+                {% set total = 0 %}
                 {% for value in incomeData %}
+                    {% set total = total + value.getAmount() %}
                     <tr>
                         <td class=" text- field-association" dir="ltr">
                             <div class="field-boolean">
@@ -89,11 +101,19 @@
                             </div>
                         </td>
                         <td class="text-right field-money" dir="ltr">
-                            {{ value.getAmount() }}
+                            € {{ value.getAmount() }}
                         </td>
                     </tr>
                 {% endfor %}
                 </tbody>
+                <tfoot>
+                <tr>
+                    <th class="text-" dir="ltr">
+                        <span>Total:</span>
+                    </td>
+                    <td class="text-right field-money" dir="ltr">€ {{ total }}</td>
+                </tr>
+                </tfoot>
             </table>
         </div>
     </div>
