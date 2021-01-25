@@ -196,16 +196,22 @@
         incomeChart.update();
 
         let monthFilter = document.getElementById('reportFilterMonth');
-        monthFilter.value = ""+{{ selectedMonth }};
+        {% if monthFilter.value|length %}
+            monthFilter.value = ""+{{ selectedMonth }};
+        {% endif %}
 
         let yearFilter = document.getElementById('reportFilterYear');
-        yearFilter.value = ""+{{ selectedYear }};
-        if(yearFilter.value == 0){
-            yearFilter.setAttribute('style','background: red;');
-        }
+        {% if yearFilter.value|length %}
+            yearFilter.value = ""+{{ selectedYear }};
+            if(yearFilter.value == 0){
+                yearFilter.setAttribute('style','background: red;');
+            }
+        {% endif %}
 
         let accountFilter = document.getElementById('reportFilterAccount');
-        accountFilter.value = ""+{{ selectedAccount }};
+        {% if accountFilter.value|length %}
+            accountFilter.value = ""+{{ selectedAccount }};
+        {% endif %}
 
         document.querySelectorAll('.page-actions select').forEach(item => {
             item.addEventListener('change', event => {
