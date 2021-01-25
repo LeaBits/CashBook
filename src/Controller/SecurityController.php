@@ -16,7 +16,7 @@ use Symfony\Component\Security\Guard\GuardAuthenticatorHandler;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
 /**
- * @Security("is_granted('ROLE_ADMIN')")
+ * @Security("is_granted('IS_AUTHENTICATED_ANONYMOUSLY')")
  */
 class SecurityController extends AbstractController
 {
