@@ -25,11 +25,7 @@ class ReportController extends AbstractController
 {
     private $reportFilter;
 
-    public function __construct(SessionInterface $session){
-        $this->reportFilter = new ReportFilter($session);
-    }
-
-    protected function prepareReportData(array $tblData)
+    private function prepareReportData(array $tblData)
     {
         $returnData = [];
         foreach($tblData as $data){
@@ -45,7 +41,7 @@ class ReportController extends AbstractController
         return $returnData;
     }
 
-    protected function getReportData(bool $isOff): array
+    private function getReportData(bool $isOff): array
     {
         if(!$this->reportFilter->getYearIsNull()){
             $startDate = new \DateTime();
@@ -102,6 +98,8 @@ class ReportController extends AbstractController
      */
     public function report(Request $request, SessionInterface $session): Response
     {
+        $this->reportFilter = new ReportFilter($session);
+
         $outcomeData = $this->prepareReportData(
             $this->getReportData(true)
         );
