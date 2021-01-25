@@ -196,12 +196,12 @@
         incomeChart.update();
 
         let monthFilter = document.getElementById('reportFilterMonth');
-        {% if selectedMonth|trim is not empty %}
+        {% if selectedMonth is defined and selectedMonth is not null %}
             monthFilter.value = ""+{{ selectedMonth }};
         {% endif %}
 
         let yearFilter = document.getElementById('reportFilterYear');
-        {% if selectedYear|trim is not empty %}
+        {% if selectedYear is defined and selectedYear is not null %}
             yearFilter.value = ""+{{ selectedYear }};
             if(yearFilter.value == 0){
                 yearFilter.setAttribute('style','background: red;');
@@ -209,7 +209,7 @@
         {% endif %}
 
         let accountFilter = document.getElementById('reportFilterAccount');
-        {% if selectedAccount|trim is not empty %}
+        {% if selectedAccount is defined and selectedAccount is not null %}
             accountFilter.value = ""+{{ selectedAccount }};
         {% endif %}
 
