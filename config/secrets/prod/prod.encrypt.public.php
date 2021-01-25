@@ -1,0 +1,3 @@
+<?php // prod.encrypt.public on Mon, 25 Jan 2021 12:35:23 +0000
+
+return "\x2A4hw3\x8AWKBOVe\xD8\x9B\xC1l\x98idjM\x0D\x5D\x89\x2A\xCC\xF1\x85\x26\x25\x9B\x01";
