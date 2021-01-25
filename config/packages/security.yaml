@@ -37,3 +37,4 @@ security:
     # Note: Only the *first* access control that matches will be used
     access_control:
         - { path: ^/admin, roles: ROLE_ADMIN, requires_channel: '%env(SECURE_SCHEME)%' }
+        - { path: ^/, requires_channel: '%env(SECURE_SCHEME)%' }
