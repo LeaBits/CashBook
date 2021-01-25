@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\BankAccount;
 use App\Entity\Report;
+use App\Entity\ReportFilter;
 use App\Entity\Transaction;
 use Doctrine\Common\Collections\ArrayCollection;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -21,6 +23,12 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ReportController extends AbstractController
 {
+    private $reportFilter;
+
+    public function __construct(SessionInterface $session){
+        $this->reportFilter = new ReportFilter($session);
+    }
+
     protected function prepareReportData(array $tblData)
     {
         $returnData = [];
@@ -37,21 +45,29 @@ class ReportController extends AbstractController
         return $returnData;
     }
 
-    protected function getReportData(bool $isOff, int $year, int $month): array
+    protected function getReportData(bool $isOff): array
     {
-        $data = [];
-
-        if($year != 0){
+        if(!$this->reportFilter->getYearIsNull()){
             $startDate = new \DateTime();
-            $startDate->setDate($year, ($month == 0? 1 : $month), 1);
+            $startDate->setDate(
+                $this->reportFilter->getYear(),
+                ($this->reportFilter->getMonthIsNull()? 1 : $this->reportFilter->getMonth()),
+                1
+            );
             $startDate->setTime(0,0,0,0);
 
             $endDate = new \DateTime();
-            $endDate->setDate($year, ($month == 0? 1 : $month), 1);
+            $endDate->setDate(
+                $this->reportFilter->getYear(),
+                ($this->reportFilter->getMonthIsNull()? 1 : $this->reportFilter->getMonth()),
+                1
+            );
             $endDate->setTime(0,0,0,0);
-            $endDate->modify('+ 1 '.($month == 0? 'year' : 'month').' - 1 second');
+            $endDate->modify('+ 1 '
+                .($this->reportFilter->getMonthIsNull()? 'year' : 'month')
+                .' - 1 second');
 
-            return $this->getDoctrine()
+            $query = $this->getDoctrine()
                 ->getRepository(Transaction::class)
                 ->createQueryBuilder('t')
                 ->where('t.isOff = :isOff')
@@ -60,15 +76,25 @@ class ReportController extends AbstractController
                     'isOff' => $isOff,
                     'dateFrom' => $startDate,
                     'dateTo' => $endDate,
-                ])
-                ->orderBy('t.date', 'ASC')
+                ]);
+
+            if(!$this->reportFilter->getAccountIsNull()){
+                $query->andWhere('t.bank_account_id = :account')
+                    ->setParameter('account', $this->reportFilter->getAccount());
+            }
+
+            return $query->orderBy('t.date', 'ASC')
                 ->getQuery()
                 ->getResult();
         }
 
+        $findBy = ['isOff' => $isOff];
+        if(!$this->reportFilter->getAccountIsNull()){
+            $findBy['bankAccount'] = $this->reportFilter->getAccount();
+        }
         return $this->getDoctrine()
             ->getRepository(Transaction::class)
-            ->findBy(['isOff' => $isOff]);
+            ->findBy($findBy);
     }
 
     /**
@@ -76,15 +102,12 @@ class ReportController extends AbstractController
      */
     public function report(Request $request, SessionInterface $session): Response
     {
-        $year = $session->get('report-year') != null? $session->get('report-year') : 0;
-        $month = $session->get('report-month') != null? $session->get('report-month') : 0;
-
         $outcomeData = $this->prepareReportData(
-            $this->getReportData(true, $year, $month)
+            $this->getReportData(true)
         );
 
         $incomeData = $this->prepareReportData(
-            $this->getReportData(false, $year, $month)
+            $this->getReportData(false)
         );
 
         $maxYear = new \DateTime();
@@ -98,29 +121,52 @@ class ReportController extends AbstractController
             $minYear = $temp->format('Y');
         }
 
+        $accounts = $this->getDoctrine()
+            ->getRepository(BankAccount::class)
+            ->findAll();
+
         return $this->render('admin/report.html.twig', [
-            'selectedYear' => $year,
-            'selectedMonth' => $month,
             'minYear' => $minYear,
             'maxYear' => $maxYear,
+            'accounts' => $accounts,
+            'selectedYear' => $this->reportFilter->getYear(),
+            'selectedMonth' => $this->reportFilter->getMonth(),
+            'selectedAccount' => $this->reportFilter->getAccount(),
             'outcomeData' => $outcomeData,
             'incomeData' => $incomeData,
         ]);
     }
 
     /**
-     * @Route("/admin/report/year/{year}/month/{month}", name="report_session", methods={"GET"}))
+     * @Route("/admin/report/year/{year}", name="report_session_year", methods={"GET"}))
      */
-    public function reportSetSession(int $year, int $month, SessionInterface $session): JsonResponse
+    public function reportSetSessionYear(int $year): JsonResponse
     {
-        //TODO: set sessions
-        $session->set('report-year', $year);
-        $session->set('report-month', $month);
+        $this->reportFilter->setYear($year != null? $year : 0);
+        return new JsonResponse([
+            'report-year' => $this->reportFilter->getYear()
+        ], Response::HTTP_OK);
+    }
 
-        $data = [
-            'report-year' => $session->get('report-year'),
-            'report-month' => $session->get('report-month'),
-        ];
-        return new JsonResponse($data, Response::HTTP_OK);
+    /**
+     * @Route("/admin/report/month/{month}", name="report_session_month", methods={"GET"}))
+     */
+    public function reportSetSessionMonth(int $month): JsonResponse
+    {
+        $this->reportFilter->setMonth($month != null? $month : 0);
+        return new JsonResponse([
+            'report-month' => $this->reportFilter->getMonth()
+        ], Response::HTTP_OK);
+    }
+
+    /**
+     * @Route("/admin/report/account/{account}", name="report_session_account", methods={"GET"}))
+     */
+    public function reportSetSessionAccount(int $account): JsonResponse
+    {
+        $this->reportFilter->setAccount($account != null? $account : 0);
+        return new JsonResponse([
+            'report-account' => $this->reportFilter->getAccount()
+        ], Response::HTTP_OK);
     }
 }

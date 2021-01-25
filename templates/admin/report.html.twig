@@ -2,120 +2,156 @@
 
 {% block page_title 'Transaction report' %}
 
+{% set totalOutcome = 0 %}
+{% for value in outcomeData %}
+    {% set totalOutcome = totalOutcome + value.getAmount() %}
+{% endfor %}
+
+{% set totalIncome = 0 %}
+{% for value in incomeData %}
+    {% set totalIncome = totalIncome + value.getAmount() %}
+{% endfor %}
+
+{% block page_actions %}
+    <select name="month" id="reportFilterMonth" class="form-control">
+        <option value="0">Month</option>
+        {% for i in 1..12 %}
+            <option value="{{ i }}">{{ i }}</option>
+        {% endfor %}
+    </select>
+    <select name="year" id="reportFilterYear" class="form-control">
+        <option value="0">Year</option>
+        {% for i in minYear..maxYear %}
+            <option value="{{ i }}">{{ i }}</option>
+        {% endfor %}
+    </select>
+    <select name="account" id="reportFilterAccount" class="form-control">
+        <option value="0">Account</option>
+        {% for value in accounts %}
+            <option value="{{ value.getId() }}">{{ value.getTitle() }}</option>
+        {% endfor %}
+    </select>
+    <button id="reportFilterSubmit" class="btn btn-primary">Submit</button>
+{% endblock %}
+
 {% block page_content %}
-    <div id="reportFilter">
-        <label>
-            Month
-            <select name="month" id="reportFilterMonth">
-                <option value="0">-</option>
-                {% for i in 1..12 %}
-                    <option value="{{ i }}">{{ i }}</option>
-                {% endfor %}
-            </select>
-        </label>
-        <label>
-            Year
-            <select name="year" id="reportFilterYear">
-                <option value="0">-</option>
-                {% for i in minYear..maxYear %}
-                    <option value="{{ i }}">{{ i }}</option>
-                {% endfor %}
-            </select>
-        </label>
-    </div>
+    <table class="table datagrid with-rounded-top ">
+        <thead>
+        <tr>
+            <th class="text-" dir="ltr" colspan="2">
+                <span>Total</span>
+            </th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td class=" text- field-association" dir="ltr"><span>Outcome:</span></td>
+            <td class="text-right field-money" dir="ltr">€ {{ totalOutcome }}</td>
+        </tr>
+        <tr>
+            <td class=" text- field-association" dir="ltr"><span>Income:</span></td>
+            <td class="text-right field-money" dir="ltr">€ {{ totalIncome }}</td>
+        </tr>
+        <tr>
+            <td class=" text- field-association" dir="ltr"><span>Total:</span></td>
+            <td class="text-right field-money" dir="ltr">€ {{ totalIncome - totalOutcome }}</td>
+        </tr>
+        </tbody>
+    </table>
 
-    <div style="display:grid;
-            grid-template-columns: 1fr 1fr;
-            column-gap: 20px;
-            row-gap: 20px;">
-
-        <div>
-            <h2>Outgoing</h2>
-            <canvas id="outcomeChart" width="400" height="400"></canvas>
-
-            <table class="table datagrid with-rounded-top ">
-                <thead>
+    <div id="reportContainer">
+        <table class="table datagrid with-rounded-top ">
+            <thead>
+            <tr>
+                <th class="text-" dir="ltr" colspan="2">
+                    <span>Outgoing</span>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <canvas id="outcomeChart" width="400" height="400"></canvas>
+                </td>
+            </tr>
+            <tr>
+                <th class="text-" dir="ltr">
+                    <span>Category</span>
+                </th>
+                <th class="text-center" dir="ltr">
+                    <span>Amount</span>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for value in outcomeData %}
                 <tr>
-                    <th class="text-" dir="ltr">
-                        <span>Category</span>
-                    </th>
-                    <th class="text-center" dir="ltr">
-                        <span>Amount</span>
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                {% set total = 0 %}
-                {% for value in outcomeData %}
-                    {% set total = total + value.getAmount() %}
-                    <tr>
-                        <td class=" text- field-association" dir="ltr">
-                            <div class="field-boolean">
-                            <span class="badge" style="background-color: {{ value.getColor() }}; color: #fff;">
-                                {{ value.getTitle() }}
-                            </span>
-                            </div>
-                        </td>
-                        <td class="text-right field-money" dir="ltr">
-                            € {{ value.getAmount() }}
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-                <tfoot>
-                <tr>
-                    <th class="text-" dir="ltr">
-                        <span>Total:</span>
+                    <td class=" text- field-association" dir="ltr">
+                        <div class="field-boolean">
+                        <span class="badge" style="background-color: {{ value.getColor() }}; color: #fff;">
+                            {{ value.getTitle() }}
+                        </span>
+                        </div>
                     </td>
-                    <td class="text-right field-money" dir="ltr">€ {{ total }}</td>
-                </tr>
-                </tfoot>
-            </table>
-        </div>
-
-        <div>
-            <h2>Incoming</h2>
-            <canvas id="incomeChart" width="400" height="400"></canvas>
-
-            <table class="table datagrid with-rounded-top ">
-                <thead>
-                <tr>
-                    <th class="text-" dir="ltr">
-                        <span>Category</span>
-                    </th>
-                    <th class="text-center" dir="ltr">
-                        <span>Amount</span>
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                {% set total = 0 %}
-                {% for value in incomeData %}
-                    {% set total = total + value.getAmount() %}
-                    <tr>
-                        <td class=" text- field-association" dir="ltr">
-                            <div class="field-boolean">
-                            <span class="badge" style="background-color: {{ value.getColor() }}; color: #fff;">
-                                {{ value.getTitle() }}
-                            </span>
-                            </div>
-                        </td>
-                        <td class="text-right field-money" dir="ltr">
-                            € {{ value.getAmount() }}
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-                <tfoot>
-                <tr>
-                    <th class="text-" dir="ltr">
-                        <span>Total:</span>
+                    <td class="text-right field-money" dir="ltr">
+                        € {{ value.getAmount() }}
                     </td>
-                    <td class="text-right field-money" dir="ltr">€ {{ total }}</td>
                 </tr>
-                </tfoot>
-            </table>
-        </div>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+            <tr>
+                <th class="text-" dir="ltr">
+                    <span>Total:</span>
+                </td>
+                <td class="text-right field-money" dir="ltr">€ {{ totalOutcome }}</td>
+            </tr>
+            </tfoot>
+        </table>
+        <table class="table datagrid with-rounded-top ">
+            <thead>
+            <tr>
+                <th class="text-" dir="ltr" colspan="2">
+                    <span>Incoming</span>
+                </th>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <canvas id="incomeChart" width="400" height="400"></canvas>
+                </td>
+            </tr>
+            <tr>
+                <th class="text-" dir="ltr">
+                    <span>Category</span>
+                </th>
+                <th class="text-center" dir="ltr">
+                    <span>Amount</span>
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for value in incomeData %}
+                <tr>
+                    <td class=" text- field-association" dir="ltr">
+                        <div class="field-boolean">
+                        <span class="badge" style="background-color: {{ value.getColor() }}; color: #fff;">
+                            {{ value.getTitle() }}
+                        </span>
+                        </div>
+                    </td>
+                    <td class="text-right field-money" dir="ltr">
+                        € {{ value.getAmount() }}
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+            <tr>
+                <th class="text-" dir="ltr">
+                    <span>Total:</span>
+                </td>
+                <td class="text-right field-money" dir="ltr">€ {{ totalIncome }}</td>
+            </tr>
+            </tfoot>
+        </table>
     </div>
 {% endblock %}
 
@@ -168,23 +204,59 @@
             yearFilter.setAttribute('style','background: red;');
         }
 
-        document.querySelectorAll('#reportFilter select').forEach(item => {
+        let accountFilter = document.getElementById('reportFilterAccount');
+        accountFilter.value = ""+{{ selectedAccount }};
+
+        document.querySelectorAll('.page-actions select').forEach(item => {
             item.addEventListener('change', event => {
                 let yearFilter = document.getElementById('reportFilterYear');
                 let monthFilter = document.getElementById('reportFilterMonth');
+                let accountFilter = document.getElementById('reportFilterAccount');
                 if(yearFilter.value == 0){
                     yearFilter.setAttribute('style','background: red;');
                 }else if(yearFilter.hasAttribute('style')){
                     yearFilter.removeAttribute('style');
                 }
 
-                fetch('/admin/report/year/'+yearFilter.value+'/month/'+monthFilter.value)
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log(data);
-                            location.reload();
-                        });
+                fetch('/admin/report/year/'+yearFilter.value)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                    });
+                fetch('/admin/report/month/'+monthFilter.value)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                    });
+                fetch('/admin/report/account/'+accountFilter.value)
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                    });
             })
         })
+
+        document.getElementById('reportFilterSubmit').addEventListener('click',event =>{
+            location.reload();
+        });
     </script>
+    <style>
+        #reportContainer{
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 20px;
+            row-gap: 20px;
+            margin-top: 20px;
+        }
+
+        #incomeChart, #outcomeChart{
+            max-width: 100%;
+        }
+
+        @media only screen and (max-width: 850px) {
+            #reportContainer{
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 {% endblock body_javascript %}
