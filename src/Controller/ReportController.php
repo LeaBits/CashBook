@@ -25,6 +25,10 @@ class ReportController extends AbstractController
 {
     private $reportFilter;
 
+    private function prepareFilter(SessionInterface $session){
+        $this->reportFilter = new ReportFilter($session);
+    }
+
     private function prepareReportData(array $tblData)
     {
         $returnData = [];
@@ -75,7 +79,7 @@ class ReportController extends AbstractController
                 ]);
 
             if(!$this->reportFilter->getAccountIsNull()){
-                $query->andWhere('t.bank_account_id = :account')
+                $query->andWhere('t.bankAccount = :account')
                     ->setParameter('account', $this->reportFilter->getAccount());
             }
 
@@ -98,7 +102,7 @@ class ReportController extends AbstractController
      */
     public function report(Request $request, SessionInterface $session): Response
     {
-        $this->reportFilter = new ReportFilter($session);
+        $this->prepareFilter($session);
 
         $outcomeData = $this->prepareReportData(
             $this->getReportData(true)
@@ -138,8 +142,9 @@ class ReportController extends AbstractController
     /**
      * @Route("/admin/report/year/{year}", name="report_session_year", methods={"GET"}))
      */
-    public function reportSetSessionYear(int $year): JsonResponse
+    public function reportSetSessionYear(int $year, SessionInterface $session): JsonResponse
     {
+        $this->prepareFilter($session);
         $this->reportFilter->setYear($year != null? $year : 0);
         return new JsonResponse([
             'report-year' => $this->reportFilter->getYear()
@@ -149,8 +154,9 @@ class ReportController extends AbstractController
     /**
      * @Route("/admin/report/month/{month}", name="report_session_month", methods={"GET"}))
      */
-    public function reportSetSessionMonth(int $month): JsonResponse
+    public function reportSetSessionMonth(int $month, SessionInterface $session): JsonResponse
     {
+        $this->prepareFilter($session);
         $this->reportFilter->setMonth($month != null? $month : 0);
         return new JsonResponse([
             'report-month' => $this->reportFilter->getMonth()
@@ -160,8 +166,9 @@ class ReportController extends AbstractController
     /**
      * @Route("/admin/report/account/{account}", name="report_session_account", methods={"GET"}))
      */
-    public function reportSetSessionAccount(int $account): JsonResponse
+    public function reportSetSessionAccount(int $account, SessionInterface $session): JsonResponse
     {
+        $this->prepareFilter($session);
         $this->reportFilter->setAccount($account != null? $account : 0);
         return new JsonResponse([
             'report-account' => $this->reportFilter->getAccount()
