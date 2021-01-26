@@ -90,9 +90,9 @@ class Transaction
 
     public function getAmount(): ?string
     {
-        if(!empty($this->getRepaymentTransaction())){
-            return ($this->amount - $this->getRepaymentTransaction()->getAmount());
-        }
+//        if(!empty($this->getRepaymentTransaction())){
+//            return ($this->amount - $this->getRepaymentTransaction()->getAmount());
+//        }
         return $this->amount;
     }
 
