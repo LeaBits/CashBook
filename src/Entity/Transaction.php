@@ -56,6 +56,28 @@ class Transaction
      */
     private $transactionSubcategory;
 
+    /**
+     * @ORM\OneToOne(targetEntity=Transaction::class, inversedBy="primaryTransaction", cascade={"persist", "remove"})
+     */
+    private $repaymentTransaction;
+
+    /**
+     * @ORM\OneToOne(targetEntity=Transaction::class, mappedBy="repaymentTransaction", cascade={"persist", "remove"})
+     */
+    private $primaryTransaction;
+
+    public function __toString()
+    {
+        $amount = $this->getCalculableAmount();
+        $date = $this->getDate()->format('d/m/y');
+        $category = $this->getTransactionCategory();
+        $subcategory = $this->getTransactionSubcategory();
+
+        return $category
+            .(!empty($subcategory)? ' '.$subcategory : '')
+            .' '.$date.' € '.$amount;
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -63,12 +85,15 @@ class Transaction
 
     public function getAmount(): ?string
     {
+        if(!empty($this->getRepaymentTransaction())){
+            return ($this->amount - $this->getRepaymentTransaction()->getAmount());
+        }
         return $this->amount;
     }
 
     public function getCalculableAmount(): float
     {
-        $amount = floatval($this->amount);
+        $amount = floatval($this->getAmount());
         return $amount / 100;
     }
 
@@ -147,6 +172,40 @@ class Transaction
     public function setTransactionSubcategory(?TransactionSubcategory $transactionSubcategory): self
     {
         $this->transactionSubcategory = $transactionSubcategory;
+
+        return $this;
+    }
+
+    public function getRepaymentTransaction(): ?self
+    {
+        return $this->repaymentTransaction;
+    }
+
+    public function setRepaymentTransaction(?self $repaymentTransaction): self
+    {
+        $this->repaymentTransaction = $repaymentTransaction;
+
+        return $this;
+    }
+
+    public function getPrimaryTransaction(): ?self
+    {
+        return $this->primaryTransaction;
+    }
+
+    public function setPrimaryTransaction(?self $primaryTransaction): self
+    {
+        // unset the owning side of the relation if necessary
+        if ($primaryTransaction === null && $this->primaryTransaction !== null) {
+            $this->primaryTransaction->setRepaymentTransaction(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($primaryTransaction !== null && $primaryTransaction->getRepaymentTransaction() !== $this) {
+            $primaryTransaction->setRepaymentTransaction($this);
+        }
+
+        $this->primaryTransaction = $primaryTransaction;
 
         return $this;
     }

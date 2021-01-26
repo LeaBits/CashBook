@@ -39,7 +39,7 @@ class TransactionCrudController extends DefaultCrudController
             AssociationField::new('bankAccount', 'Bank Account')
                 ->setTemplatePath('admin/bankAccountField.html.twig')
                 ->setSortable(false),
-            BooleanField::new('isOff', 'Taken off (instead of received)')
+            BooleanField::new('isOff', 'Taken off')
                 ->setSortable(false)
                 ->renderAsSwitch(false),
             MoneyField::new('amount', 'Amount')->setCurrency('EUR'),
@@ -49,6 +49,8 @@ class TransactionCrudController extends DefaultCrudController
                 ->setTemplatePath('admin/bankAccountField.html.twig')
                 ->setSortable(false),
             AssociationField::new('transactionSubcategory', 'Subcategory')
+                ->setSortable(false),
+            AssociationField::new('repaymentTransaction', 'Repaid by transaction')
                 ->setSortable(false),
             TextEditorField::new('comments', 'Comments')
                 ->setSortable(false)

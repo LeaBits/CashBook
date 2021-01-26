@@ -33,6 +33,10 @@ class ReportController extends AbstractController
     {
         $returnData = [];
         foreach($tblData as $data){
+            if(!empty($data->getPrimaryTransaction())){
+                continue;
+            }
+
             $key = $data->getTransactionCategory()->getTitle();
             if(!isset($returnData[$key])){
                 $returnData[$key] = new Report();
