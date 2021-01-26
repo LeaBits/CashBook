@@ -33,9 +33,10 @@ class ReportController extends AbstractController
     {
         $returnData = [];
         foreach($tblData as $data){
-            if(!empty($data->getPrimaryTransaction())){
-                continue;
-            }
+//            // do not show transactions on report
+//            if(!empty($data->getPrimaryTransaction())){
+//                continue;
+//            }
 
             $key = $data->getTransactionCategory()->getTitle();
             if(!isset($returnData[$key])){
