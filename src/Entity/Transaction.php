@@ -68,12 +68,13 @@ class Transaction
 
     public function __toString()
     {
+        $account = $this->getBankAccount();
         $amount = $this->getCalculableAmount();
         $date = $this->getDate()->format('d/m/y');
         $category = $this->getTransactionCategory();
         $subcategory = $this->getTransactionSubcategory();
 
-        return $category
+        return $account.' - '.$category
             .(!empty($subcategory)? ' '.$subcategory : '')
             .' '.$date.' € '.$amount;
     }
