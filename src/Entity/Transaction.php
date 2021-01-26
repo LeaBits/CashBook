@@ -66,6 +66,10 @@ class Transaction
      */
     private $primaryTransaction;
 
+    public function __construct(){
+        $this->date = new \DateTime();
+    }
+
     public function __toString()
     {
         $account = $this->getBankAccount();

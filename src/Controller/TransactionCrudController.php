@@ -3,7 +3,10 @@
 namespace App\Controller;
 
 use App\Controller\Crud\_DefaultCrudController;
+use App\Entity\BankAccount;
 use App\Entity\Transaction;
+use App\Entity\TransactionCategory;
+use App\Entity\TransactionSubcategory;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
@@ -31,36 +34,74 @@ class TransactionCrudController extends DefaultCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        // id field
         yield IdField::new('id')
             ->hideOnForm()
             ->hideOnIndex();
 
+        // bank account field, ordered
+        $bankAccounts = $this->getDoctrine()
+            ->getRepository(BankAccount::class)
+            ->createQueryBuilder('b')
+            ->orderBy('b.title', 'ASC')
+            ->getQuery()
+            ->getResult();
         $account = AssociationField::new('bankAccount', 'Bank Account');
         if($this->isOnMobile()){ $account->hideOnIndex(); }
-        yield $account->setTemplatePath('admin/bankAccountField.html.twig')
+        yield $account->setFormTypeOptions(["choices" => $bankAccounts])
+            ->setTemplatePath('admin/colorBadgeField.html.twig')
+            ->setRequired(true)
             ->setSortable(false);
 
+        // is off field
         $isOff = BooleanField::new('isOff', 'Taken off');
         if($this->isOnMobile()){ $isOff->hideOnIndex(); }
         yield $isOff->setSortable(false)
             ->renderAsSwitch(false);
 
+        // amount field
         yield MoneyField::new('amount', '€')
             ->setCurrency('EUR');
+
+        // date field
         yield DateField::new('date', 'Date')
             ->setFormat('d/M/y');
+
+        // categories field, ordered
+        $categories = $this->getDoctrine()
+            ->getRepository(TransactionCategory::class)
+            ->createQueryBuilder('tc')
+            ->orderBy('tc.title', 'ASC')
+            ->getQuery()
+            ->getResult();
         yield AssociationField::new('transactionCategory', 'Category')
-            ->setTemplatePath('admin/bankAccountField.html.twig')
+            ->setFormTypeOptions(["choices" => $categories])
+            ->setTemplatePath('admin/colorBadgeField.html.twig')
+            ->setRequired(true)
             ->setSortable(false);
 
+        // subcategories field, ordered
+        $subCategories = $this->getDoctrine()
+            ->getRepository(TransactionSubcategory::class)
+            ->createQueryBuilder('tc')
+            ->orderBy('tc.title', 'ASC')
+            ->getQuery()
+            ->getResult();
         $subCategory = AssociationField::new('transactionSubcategory', 'Subcategory');
         if($this->isOnMobile()){ $subCategory->hideOnIndex(); }
-        yield $subCategory->setSortable(false);
+        yield $subCategory->setSortable(false)
+            ->setFormTypeOptions(["choices" => $subCategories]);
 
+        // repayment field, only show incoming transactions
+        $repayTransactions = $this->getDoctrine()->getRepository(Transaction::class)
+            ->findBy(['isOff' => 0], ['date' => 'DESC']);
         $repayment = AssociationField::new('repaymentTransaction', 'Repaid by transaction');
         if($this->isOnMobile()){ $repayment->hideOnIndex(); }
-        yield $repayment->setSortable(false);
+        yield $repayment->setFormTypeOptions(["choices" => $repayTransactions])
+            ->setTemplatePath('admin/repaidField.html.twig')
+            ->setSortable(false);
 
+        // comments field
         yield TextEditorField::new('comments', 'Comments')
             ->setSortable(false)
             ->hideOnIndex();
